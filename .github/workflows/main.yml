@@ -1,0 +1,33 @@
+name: Build and Deploy to Azure
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Log in to Azure Container Registry
+        run: echo ${{ secrets.AZURE_CR_PWD }} | docker login softeng.azurecr.io --username ${{ secrets.AZURE_CR_USER }} --password-stdin
+
+      - name: Build and push Docker image
+        run: |
+          docker build . --tag softeng.azurecr.io/<your-app-name>:${{ github.sha }}
+          docker push softeng.azurecr.io/<your-app-name>:${{ github.sha }}
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log in to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy to Azure App Service
+        run: |
+          az webapp config container set --name <your-app-name> --resource-group softeng-lab --docker-custom-image-name softeng.azurecr.io/<your-app-name>:${{ github.sha }}
