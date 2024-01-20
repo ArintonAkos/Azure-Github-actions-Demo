@@ -3,8 +3,9 @@ name: Build and Deploy to Azure
 on:
   push:
     branches:
-      - main
-
+      - master
+  workflow_dispatch:
+  
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -16,8 +17,8 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          docker build . --tag softeng.azurecr.io/<your-app-name>:${{ github.sha }}
-          docker push softeng.azurecr.io/<your-app-name>:${{ github.sha }}
+          docker build . --tag softeng.azurecr.io/annotated-aaim2111:${{ github.sha }}
+          docker push softeng.azurecr.io/annotated-aaim2111:${{ github.sha }}
 
   deploy:
     needs: build-and-push
@@ -30,4 +31,4 @@ jobs:
 
       - name: Deploy to Azure App Service
         run: |
-          az webapp config container set --name <your-app-name> --resource-group softeng-lab --docker-custom-image-name softeng.azurecr.io/<your-app-name>:${{ github.sha }}
+          az webapp config container set --name annotated-aaim2111 --resource-group softeng-lab --docker-custom-image-name softeng.azurecr.io/annotated-aaim2111:${{ github.sha }}
